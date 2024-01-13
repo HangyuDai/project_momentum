@@ -32,18 +32,25 @@ for i = 3
         index=logical(sum(index_i,2));
         mom_sample=return_m(index,1:end);
 
-       % calculate the previous months' cumulative return
+       % next calculate the previous months' cumulative return for later
+       % portfolio analysis 
        [G,code]=findgroups(mom_sample.code);
        pr_return=splitapply(@(x)sum(x),mom_sample.Returns,G);
        pr_return_table=table(code,pr_return);
-       % merge it back to mom_sample to enhance the vector of previous return
+       % merge it back to mom_smaple to enhance the vector of previous
+       % return
        
        index_r=(return_m.jdate==start_date);
        mom_r=return_m(index_r,1:end);
 
+
        mom_sample1=outerjoin(mom_r,pr_return_table,'Keys',{'code'},'MergeKeys',true,'Type','left');
        
-       % merge the sample back to the full dataset for each iteration
+       % keep only the last obervation for each firm for later analysis
+       %mom_sample2=mom_sample1(mom_sample1.jdate==j+1,:);
+       % next merge the sample back to the full dataset for each iteration 
+
+       %return_full=outerjoin(return_monthly,mom_sample2(:,{'code','pr_return','jdate'}),'Keys',{'code','jdate'},'MergeKeys',true,'Type','left');
        
        return_full=vertcat(mom_old, mom_sample1);
        
