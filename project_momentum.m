@@ -52,3 +52,63 @@ for i = 3
     end
 
 end
+
+%%
+
+%% Task b)
+
+% Create percentiles functions, using anonymous functions and the prctile_
+% function for prctile_20, prctile_40, prctile_60, prctile_80) 
+
+for i=20:20:80
+   eval(['prctile_',num2str(i),'=','@(input)prctile(input,i)',';']);
+end
+
+% Calcualte percentiles
+%Applies the function mom_bucket_5 to each row of the specified columns.
+% Create a new variable mom_label in return_full based on the function output.
+
+
+for x=20:20:80
+                eval(['b','=','prctile_',num2str(x),'(return_full.pr_return)',';']);
+                eval(['return_full.mom',num2str(x),'=','b*ones(size(return_full,1),1)',';']);
+end
+
+return_full.mom_label=rowfun(@mom_bucket_5,return_full(:,{'pr_return','mom20','mom40','mom60'...
+                ,'mom80'}),'OutputFormat','cell');
+   
+% ceate equal-weighted portfolio
+
+return_full.ew=ones(size(return_full,1),1);        
+           
+% Grouping anc computing equal-weighted returns
+            
+[G,jdate,mom_label]=findgroups(return_full.Date, return_full.mom_label);
+
+ewret=splitapply(@wavg,return_full(:,{'pr_return','ew'}),G);
+
+ewret_table=table(jdate,mom_label,ewret);
+
+% unstack data and compute av returns
+% computes the av returns for the low and high previous return groups (A and E, respectively)
+
+mom_factors=unstack(ewret_table(:,{'ewret','jdate','mom_label'}),'ewret','mom_label');
+
+A=nanmean(table2array(mom_factors(:,2)))*100;
+
+E=nanmean(table2array(mom_factors(:,6)))*100;
+
+% display results
+
+fprintf('The average return for the low previous return group is %4.3f percent per month \n',A)
+
+fprintf('The average return for the high previous return group is %4.3f percent per month \n',E)
+
+
+% The output shows that: 
+%The average return for the low previous return group is -2185.032 percent per month 
+%The average return for the high previous return group is 3734.668 percent per month
+
+% based on the observed return spread, it seems that there is evidence of momentum in Chinese stock markets. 
+% The positive return spread suggests a potential momentum effect
+% Past winners continue to outperform past losers over the specified holding periods.
