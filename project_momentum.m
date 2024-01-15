@@ -41,6 +41,10 @@ for i = 3
        index_r=(return_m.jdate==start_date);
        mom_r=return_m(index_r,1:end);
 
+       % to avoid missing values
+       is_in_both = ismember(mom_r.code, pr_return_table.code);
+       mom_r = mom_r(is_in_both, :);
+
        mom_sample1=outerjoin(mom_r,pr_return_table,'Keys',{'code'},'MergeKeys',true,'Type','left');
        
        % merge the sample back to the full dataset for each iteration
@@ -79,9 +83,7 @@ return_full.mom_label=rowfun(@mom_bucket_5,return_full(:,{'pr_return','mom20','m
    
 % create equal-weighted portfolio
 
-return_full.ew=ones(size(return_full,1),1);        
-           
-% Grouping anc computing equal-weighted returns
+return_full.ew=ones(size(return_full,1),1);  
             
 [G,jdate,mom_label]=findgroups(return_full.Date, return_full.mom_label);
 
